@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -e
+
+dropdb graphed
+diesel setup
+diesel print-schema > src/schema.rs
+cargo build

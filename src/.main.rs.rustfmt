@@ -1,0 +1,201 @@
+#![feature(plugin)]
+#![plugin(rocket_codegen)]
+
+extern crate chrono;
+extern crate diesel;
+extern crate dotenv;
+extern crate juniper;
+#[macro_use]
+extern crate juniper_codegen;
+extern crate juniper_rocket;
+extern crate rocket;
+#[macro_use]
+extern crate rocket_codegen;
+extern crate serde;
+#[macro_use]
+extern crate serde_derive;
+extern crate r2d2;
+extern crate r2d2_diesel;
+#[cfg(test)]
+extern crate spectral;
+extern crate uuid;
+
+use chrono::prelude::*;
+use diesel::pg::PgConnection;
+use juniper::{FieldResult, RootNode, ID};
+use r2d2::Pool;
+use r2d2_diesel::ConnectionManager;
+use rocket::response::content;
+use rocket::State;
+use uuid::Uuid;
+use std::env;
+
+// TODO: GraphQL integration
+
+#[derive(GraphQLObject)]
+#[graphql(description = "A user in the system.")]
+struct User {
+    id: ID,
+    nickname: Option<String>,
+    email: String,
+    created: DateTime<Utc>,
+    last_login: DateTime<Utc>,
+    trees: Vec<Tree>,
+}
+
+#[derive(GraphQLInputObject)]
+#[graphql(description = "A user in the system.")]
+struct NewUser {
+    nickname: Option<String>,
+    email: String,
+}
+
+#[derive(GraphQLObject)]
+#[graphql(description = "A user in the system.")]
+struct UserInfo {
+    id: ID,
+    nickname: Option<String>,
+    email: String,
+}
+
+#[derive(GraphQLObject)]
+#[graphql(description = "A tree of nodes, maybe grouped around a topic.")]
+struct Tree {
+    id: ID,
+    title: String,
+    root: Node,
+    owner: User,
+    shared: Vec<User>,
+    created: DateTime<Utc>,
+    updated: DateTime<Utc>,
+}
+#[derive(GraphQLInputObject)]
+#[graphql(description = "A tree of nodes, maybe grouped around a topic.")]
+struct NewTree {
+    title: String,
+}
+
+#[derive(GraphQLObject)]
+#[graphql(description = "A node in a graph of information.")]
+struct Node {
+    id: juniper::ID,
+    title: String,
+    content: String,
+    created: DateTime<Utc>,
+    updated: DateTime<Utc>,
+    children: Vec<Node>,
+}
+
+#[derive(GraphQLInputObject)]
+#[graphql(description = "A node in a graph of information.")]
+struct NewNode {
+    title: String,
+    content: String,
+}
+
+// TODO: Database integration
+// TODO: r2d2
+
+struct Context {}
+
+impl juniper::Context for Context {}
+
+struct Query;
+
+graphql!(Query: Context |&self| {
+    field apiVersion() -> &str {
+        "1.0"
+    }
+
+    field user(&executor, email: String) -> FieldResult<User> {
+        unimplemented!()
+    }
+
+    field userInfo(&executor, email: String) -> FieldResult<UserInfo> {
+        unimplemented!()
+    }
+
+    field tree(&executor, id: String) -> FieldResult<Tree> {
+        unimplemented!()
+    }
+
+    field node(&executor, id: String) -> FieldResult<Tree> {
+        unimplemented!()
+    }
+});
+
+struct Mutation;
+
+graphql!(Mutation: Context |&self| {
+    field createUser(&executor, new_user: NewUser) -> FieldResult<User> {
+        unimplemented!()
+    }
+
+    field createTree(&executor, new_tree: NewTree) -> FieldResult<Tree> {
+        unimplemented!()
+    }
+
+    field shareTree(&executor, tree_id: ID, user_id: ID) -> FieldResult<Tree> {
+        unimplemented!()
+    }
+
+    field createNode(&executor, parent_id: ID, new_node: NewNode) -> FieldResult<Node> {
+        unimplemented!()
+    }
+
+    field editNode(&executor, node: Node) -> FieldResult<Node> {
+        unimplemented!()
+    }
+});
+
+//
+
+type Schema = RootNode<'static, Query, Mutation>;
+
+#[get("/")]
+fn graphiql() -> content::Html<String> {
+    juniper_rocket::graphiql_source("/graphql")
+}
+
+#[get("/graphql?<request>")]
+fn get_graphql_handler(
+    context: State<Node>,
+    request: juniper_rocket::GraphQLRequest,
+    schema: State<Schema>,
+) -> juniper_rocket::GraphQLResponse {
+    request.execute(&schema, &context)
+}
+
+#[post("/graphql", data = "<request>")]
+fn post_graphql_handler(
+    context: State<Node>,
+    request: juniper_rocket::GraphQLRequest,
+    schema: State<Schema>,
+) -> juniper_rocket::GraphQLResponse {
+    request.execute(&schema, &context)
+}
+
+fn create_db_pool(url: &str) -> Pool<ConnectionManager<PgConnection>> {
+    let manager = ConnectionManager::<PgConnection>::new(url);
+    Pool::builder()
+        .build(manager)
+        .expect("Failed to create pool.")
+}
+
+fn main() {
+    dotenv::dotenv().ok();
+
+    let database_url = env::var("DATABASE_URL")
+        .expect("DATABASE_URL must be set.");
+
+    let pool = create_db_pool(&database_url);
+
+    rocket::ignite()
+        .manage(node)
+        .manage(Schema::new(Query, Mutation)
+        .mount(
+            "/",
+            routes![graphiql, get_graphql_handler, post_graphql_handler],
+        )
+        .launch()
+}
