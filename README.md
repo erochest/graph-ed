@@ -2,23 +2,25 @@
 
 A proof-of-concept with GraphQL.
 
-# Running
+## Running
 
-First use the right version of Rust (as of May 20, 2018):
+The `rust-toolchain` file sets the correct version of Rust (as of May 20,
+2018). You can also run this command:
 
 ```bash
 rustup default nightly-2018-05-16
 ```
 
-Now compile and run.
+Compile and run.
 
 ```bash
 cargo run
 ```
 
-[GraphiQL](https://github.com/graphql/graphiql) should be running on <http://localhost:8000/>.
+[GraphiQL](https://github.com/graphql/graphiql) should be running on
+<http://localhost:8000/>.
 
-# TODOs
+## TODOs
 
 * [ ] authorization/authentication
 * [ ] associate trees with the users who created them
