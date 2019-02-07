@@ -25,7 +25,7 @@ mod graph;
 mod models;
 mod schema;
 
-use context::Context;
+use crate::context::Context;
 
 #[get("/")]
 fn graphiql() -> content::Html<String> {

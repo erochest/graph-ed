@@ -1,7 +1,7 @@
 use chrono::prelude::*;
-use context::Context;
+use crate::context::Context;
 use juniper::{FieldError, FieldResult, RootNode, Value, ID};
-use models::{NewUser, User, Tree, Node};
+use crate::models::{NewUser, User, Tree, Node};
 
 graphql_object! { User: Context |&self| {
     description: "A user in the system"

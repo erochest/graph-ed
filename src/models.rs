@@ -1,11 +1,11 @@
 use chrono::prelude::*;
-use context::Pool;
+use crate::context::Pool;
 use diesel::prelude::*;
 use diesel::*;
-use schema::nodes;
-use schema::trees;
-use schema::user_trees;
-use schema::users;
+use crate::schema::nodes;
+use crate::schema::trees;
+use crate::schema::user_trees;
+use crate::schema::users;
 
 #[derive(Queryable, Associations, Identifiable)]
 pub struct User {
