@@ -1,5 +1,4 @@
-#![feature(plugin)]
-#![plugin(rocket_codegen)]
+#![feature(proc_macro_hygiene, decl_macro)]
 
 extern crate chrono;
 #[macro_use]
@@ -10,6 +9,7 @@ extern crate juniper;
 extern crate juniper_rocket;
 extern crate r2d2;
 extern crate r2d2_diesel;
+#[macro_use]
 extern crate rocket;
 extern crate serde;
 #[macro_use] extern crate serde_derive;

@@ -30,7 +30,7 @@ graphql_object! { User: Context |&self| {
         let context = executor.context();
         let pool = &context.pool;
         self.find_trees(&pool)
-            .map_err(|err| FieldError::new(err, Value::String("trees".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("trees".to_string())))
     }
 }}
 
@@ -67,7 +67,7 @@ graphql_object! { Tree: Context |&self| {
         let context = executor.context();
         let pool = &context.pool;
         self.root(pool)
-            .map_err(|err| FieldError::new(err, Value::String("root".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("root".to_string())))
     }
 
     field created() -> DateTime<Utc> as "The timestamp the tree was created on" {
@@ -98,21 +98,21 @@ graphql_object! { Node: Context |&self| {
         let context = executor.context();
         let pool = &context.pool;
         self.tree(pool)
-            .map_err(|err| FieldError::new(err, Value::String("tree".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("tree".to_string())))
     }
 
     field parent(&executor) -> FieldResult<Option<Node>> as "The node's parent node" {
         let context = executor.context();
         let pool = &context.pool;
         self.parent(pool)
-            .map_err(|err| FieldError::new(err, Value::String("parent".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("parent".to_string())))
     }
 
     field children(&executor) -> FieldResult<Vec<Node>> as "The node's children" {
         let context = executor.context();
         let pool = &context.pool;
         self.children(pool)
-            .map_err(|err| FieldError::new(err, Value::String("children".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("children".to_string())))
     }
 
     field created() -> DateTime<Utc> as "The timestamp the tree was created on" {
@@ -134,30 +134,30 @@ graphql_object!(Query: Context |&self| {
     field user(&executor, email: String) -> FieldResult<User> {
         let context = executor.context();
         User::find_by_email(&context.pool, &email)
-            .map_err(|err| FieldError::new(&err, Value::String(email.clone())))
+            .map_err(|err| FieldError::new(&err, Value::scalar(email.clone())))
     }
 
     field userInfo(&executor, email: String) -> FieldResult<UserInfo> {
         let context = executor.context();
         User::find_by_email(&context.pool, &email)
             .map(UserInfo::from)
-            .map_err(|err| FieldError::new(&err, Value::String(email.clone())))
+            .map_err(|err| FieldError::new(&err, Value::scalar(email.clone())))
     }
 
     field tree(&executor, id: String) -> FieldResult<Tree> {
         let context = executor.context();
         let int_id = id.parse()
-            .map_err(|err| FieldError::new(format!("Invalid ID: {}", &err), Value::String(id.clone())))?;
+            .map_err(|err| FieldError::new(format!("Invalid ID: {}", &err), Value::scalar(id.clone())))?;
         Tree::get(&context.pool, int_id)
-            .map_err(|err| FieldError::new(err, Value::String(id.clone())))
+            .map_err(|err| FieldError::new(err, Value::scalar(id.clone())))
     }
 
     field node(&executor, id: String) -> FieldResult<Node> {
         let context = executor.context();
         let int_id = id.parse()
-            .map_err(|err| FieldError::new(format!("Invalid ID: {}", &err), Value::String(id.clone())))?;
+            .map_err(|err| FieldError::new(format!("Invalid ID: {}", &err), Value::scalar(id.clone())))?;
         Node::get(&context.pool, int_id)
-            .map_err(|err| FieldError::new(err, Value::String(id.clone())))
+            .map_err(|err| FieldError::new(err, Value::scalar(id.clone())))
     }
 });
 
@@ -167,13 +167,13 @@ graphql_object!(Mutation: Context |&self| {
     field createUser(&executor, new_user: NewUser) -> FieldResult<User> {
         let context = executor.context();
         User::new(&context.pool, new_user)
-            .map_err(|err| FieldError::new(err, Value::String("createUser".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("createUser".to_string())))
     }
 
     field createTree(&executor, title: String) -> FieldResult<Tree> {
         let context = executor.context();
         Tree::new(&context.pool, &title)
-            .map_err(|err| FieldError::new(err, Value::String("createTree".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("createTree".to_string())))
     }
 
     field shareTree(&executor, tree_id: ID, user_id: ID) -> FieldResult<Tree> {
@@ -182,10 +182,10 @@ graphql_object!(Mutation: Context |&self| {
 
     field createNode(&executor, parent_id: ID, title: String, content: String) -> FieldResult<Node> {
         let int_id = parent_id.parse()
-            .map_err(|err| FieldError::new(format!("Invalid ID: {}", &err), Value::String(parent_id.to_string())))?;
+            .map_err(|err| FieldError::new(format!("Invalid ID: {}", &err), Value::scalar(parent_id.to_string())))?;
         let context = executor.context();
         Node::new(&context.pool, Some(int_id), &title, &content)
-            .map_err(|err| FieldError::new(err, Value::String("createNode".to_string())))
+            .map_err(|err| FieldError::new(err, Value::scalar("createNode".to_string())))
     }
 
     field editNode(&executor, id: ID, title: String, content: String) -> FieldResult<Node> {
