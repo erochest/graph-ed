@@ -144,6 +144,12 @@ graphql_object!(Query: Context |&self| {
             .map_err(|err| FieldError::new(&err, Value::scalar(email.clone())))
     }
 
+    field trees(&executor) -> FieldResult<Vec<Tree>> {
+        let context = executor.context();
+        Tree::list_trees(&context.pool)
+            .map_err(|err| FieldError::new(err, Value::scalar("trees")))
+    }
+
     field tree(&executor, id: String) -> FieldResult<Tree> {
         let context = executor.context();
         let int_id = id.parse()

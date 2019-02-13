@@ -101,6 +101,14 @@ impl Tree {
             .map_err(|err| format!("Error inserting {:?}: {}", &new_tree, &err))
     }
 
+    pub fn list_trees(pool: &Pool) -> Result<Vec<Tree>, String> {
+        let connection = pool.get()
+            .map_err(|err| format!("Error getting connection pool: {}", &err))?;
+        trees::table
+            .load::<Tree>(&*connection)
+            .map_err(|err| format!("Unable to load trees: {}", &err))
+    }
+
     pub fn get(pool: &Pool, id: i32) -> Result<Tree, String> {
         let connection = pool.get()
             .map_err(|err| format!("Error getting connection pool: {}", &err))?;
