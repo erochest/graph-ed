@@ -1,7 +1,9 @@
 use chrono::prelude::*;
-use crate::context::Pool;
-use diesel::prelude::*;
 use diesel::*;
+use diesel::pg::Pg;
+use diesel::query_builder::DebugQuery;
+
+use crate::context::Pool;
 use crate::schema::nodes;
 use crate::schema::trees;
 use crate::schema::user_trees;
@@ -28,9 +30,12 @@ impl User {
     pub fn new(pool: &Pool, new_user: NewUser) -> Result<User, String> {
         let connection = pool.get()
             .map_err(|err| format!("Error getting connection pool: {}", &err))?;
+        let insert_statement = insert_into(users::table)
+            .values(&new_user);
 
-        insert_into(users::table)
-            .values(&new_user)
+        let debug: DebugQuery<_, Pg> = debug_query(&insert_statement);
+        eprintln!("NEW: {:?}", &debug);
+        insert_statement
             .get_result(&*connection)
             .map_err(|err| format!("Error inserting {:?}: {}", &new_user, &err))
     }
