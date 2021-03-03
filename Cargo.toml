@@ -6,8 +6,10 @@ edition = "2018"
 
 [dependencies]
 chrono = { version = "0.4.6", features = ["serde"] }
+dataloader = "0.5.1"
 diesel = { version = "1.4.1", features = ["postgres", "chrono"] }
 dotenv = "0.13.0"
+futures = "0.1.25"
 juniper = "0.11.1"
 juniper_codegen = "0.11.1"
 juniper_rocket = "0.2.0"
